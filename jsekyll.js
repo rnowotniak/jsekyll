@@ -12,7 +12,6 @@ const fs = require('fs')
 const yaml = require('js-yaml');
 const { ArgumentParser } = require('argparse');
 const { Liquid } = require('liquidjs');
-const liquid = new Liquid();
 const marked = require('marked')
 const express = require('express');
 const app = express();
@@ -45,7 +44,7 @@ if (require.main !== module) {
 // Parse arguments
 const parser = new ArgumentParser({description:"Minimalistic Static-Site Generator (similar to Jekyll) but in JavaScript"});
 parser.add_argument('--destination', '-d', { type:'string', help:'destination directory'});
-parser.add_argument('--source', '-s', { metavar:'src_dir', type:'string', help:'Source directory'});
+parser.add_argument('--source', '-s', { type:'string', help:'Source directory'});
 
 let subparsers = parser.add_subparsers({title:'subcommands'})
 let parser_s = subparsers.add_parser('server', { aliases:['serve', 's'], help:'Serve your site locally'} )
@@ -102,7 +101,14 @@ function buildFile(fname) {
 	rawfile_arr = rawfile_arr.slice(i);
 	rendered = rawfile_arr.join('\n');
 
-	rendered = liquid.parseAndRenderSync(rendered, template_variables);
+	const layout = 'lay1'
+
+	// the order matters here (Liquid always needs to be the first?)
+	rendered = `
+	{% layout "_layouts/${layout}.html" %}
+	{% block content %}\n${rendered}{% endblock %}
+	`.trim()
+	rendered = liquid.parseAndRenderSync(rendered, {'page':y});
 	rendered = marked(rendered);
 
 	let dst_fname = `${DST_DIR}/${fname.replace(/\.md$/i, '.html')}`;
@@ -135,11 +141,9 @@ const PORT = parseInt(args.P) || 4000;
 const SRC_DIR = args.source || __dirname + '/src';
 const DST_DIR = args.destination || __dirname + '/_site';
 
+const liquid = new Liquid({root:SRC_DIR});
+
 args.func(args)
-
-
-
-
 
 
 const LIVE_RELOAD = `
@@ -166,7 +170,7 @@ app.get('/', (req,res) => {
 
 	console.log(`Re-rendering file ${fname}`)
 
-	/***** CUT THIS *******/
+	/***** CUT THIS *******/  /* dont do any improvements here */
 		let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
 
 		// the order makes some difference here (liquid or marked first)
