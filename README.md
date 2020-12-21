@@ -6,11 +6,31 @@
 * generate actual files (_site/....)
 * multi-files support
 * _config.yml (to liquid vars)
-* _layouts, _includes
-* permalink
+* _layouts
+* permalink / routing / URLs
+* additional liquid tags:  {% link _posts/020302-fasd.md %} {% post_url %}
 
+* files structure (other that Jekyll's _/post/YYYY-MM-DD-....) - what then?
+
+* frontmatter - done
+* include - PoC done
 * liquid templates - POC done
 * livereload - POC done
+
+
+
+* structure:
+/img
+/404.html
+
+/_posts
+/_layout
+/assets ???
+_config.yml
+_data/
+_includes
+/_site
+
 
 ### TODO perhaps some day in the future
 

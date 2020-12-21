@@ -36,30 +36,45 @@ if (require.main !== module) {
 
 // Parse arguments
 const parser = new ArgumentParser({description:"Minimalistic Static-Site Generator (similar to Jekyll) but in JavaScript"});
-parser.add_argument('--destination', '-d', { metavar:'dst_dir', type:'string', help:'destination directory'});
+parser.add_argument('--destination', '-d', { type:'string', help:'destination directory'});
 parser.add_argument('--source', '-s', { metavar:'src_dir', type:'string', help:'Source directory'});
 
-let subparsers = parser.add_subparsers()
-let parser_s = subparsers.add_parser('s', { aliases:['server', 'serve'], help:'Serve your site locally'} )
+let subparsers = parser.add_subparsers({title:'subcommands'})
+let parser_s = subparsers.add_parser('server', { aliases:['serve', 's'], help:'Serve your site locally'} )
 // Bug:  argparse seems not to support subparser metavar
 parser_s.add_argument('-P', { help: 'Port to listen'})
 parser_s.add_argument('-l', { action: 'store_true', help: 'Use LiveReload to automatically refresh browsers'})
 parser_s.add_argument('-H', { help: 'Host to bind to'})
+parser_s.set_defaults({func:serve})
 
-let parser_b = subparsers.add_parser('b', { help:'Build your site'} )
+const DEFAULT_DST_DIR = './_site'
+
+function serve(args) {
+	console.log('serving site')
+	console.log(args)
+}
+
+function build(args) {
+	console.log('building site to ' + DST_DIR)
+	console.log(args)
+	process.exit(0)
+}
+
+let parser_b = subparsers.add_parser('build', { aliases:['b'], help:'Build your site'} )
+parser_b.set_defaults({func:build})
 
 let args = parser.parse_args();
-
-console.log(args)
-
 const PORT = parseInt(args.P) || 4000;
 const SRC_DIR = args.source || __dirname + '/src';
+const DST_DIR = args.destination || __dirname + '/_site';
+
+args.func(args)
 
 
 
 let { Liquid } = require('liquidjs');
 let liquid = new Liquid();
-let template_variables = {name:'ro**be**rt _n_'}
+let template_variables = {name:'ro**be**rt _n_', posts:['post1', 'post2', 'PoST3']}
 
 
 const express = require('express');
@@ -84,6 +99,9 @@ while (true) {
 }
 dir.closeSync()
 
+
+const yaml = require('js-yaml');
+
 app.get('/', (req,res) => {
 
 	console.log(`Re-rendering file ${fname}`)
@@ -91,6 +109,37 @@ app.get('/', (req,res) => {
 
 	// the order makes some difference here (liquid or marked first)
 	let rendered = rawfile;
+	let rawfile_arr = rendered.split('\n')
+	let i = 0;
+	let frontmatter = ''
+	if (['---\r', '---'].includes(rawfile_arr[i++]) ) {
+		// read frontmatter
+		while (i < rawfile_arr.length) {
+			if (['---\r', '---'].includes(rawfile_arr[i]) ) {
+				break
+			}
+			frontmatter += rawfile_arr[i] + "\n";
+			i += 1;
+		}
+		i += 1;
+		console.log("Frontmatter: " + frontmatter);
+	}
+	let y = yaml.safeLoad(frontmatter)
+
+	// special handling for categories and tags
+	if ('string' == typeof y.tags ) {
+		y.tags = y.tags.trim().split(/ +/)
+	}
+	if ('string' == typeof y.categories ) {
+		y.categories = y.categories.trim().split(/ +/)
+	}
+
+	process.stdout.write('Yaml: ')
+	console.log(y)
+
+	rawfile_arr = rawfile_arr.slice(i)
+	rendered = rawfile_arr.join('\n')
+
 	rendered = liquid.parseAndRenderSync(rendered, template_variables);
 	rendered = marked(rendered);
 

@@ -25,10 +25,9 @@
   "dependencies": {
     "argparse": "^2.0.1",
     "express": "^4.17.1",
-    "liquid": "^5.1.1",
+    "js-yaml": "^3.14.1",
     "liquidjs": "^9.19.0",
-    "marked": "^1.2.7",
-    "nodemon": "^2.0.6"
+    "marked": "^1.2.7"
   },
   "devDependencies": {
     "browser-sync": "^2.26.13",
