@@ -3,8 +3,6 @@
 
 ## TODO
 
-* _config.yml (to liquid vars)
-* _layouts
 * permalink / routing / URLs
 * additional liquid tags:  {% link _posts/020302-fasd.md %} {% post_url %}
 * page variables:   {{ page.var }}
@@ -12,6 +10,8 @@
 * files structure (other that Jekyll's _/post/YYYY-MM-DD-....) - what then?
 
 Done:
+* _layouts
+* _config.yml (to liquid vars  site.var)
 * generate actual files (_site/....)
 * multi-files support
 * frontmatter - done

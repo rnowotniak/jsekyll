@@ -61,13 +61,17 @@ function serve(args) {
 	console.log(args)
 }
 
+/*
+ * For comparison: https://jekyllrb.com/docs/rendering-process/
+ */
 function buildFile(fname) {
 	console.log('Building ' + fname);
 	let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
 
-	// the order makes some difference here (liquid or marked first)
-	let rendered = rawfile;
-	let rawfile_arr = rendered.split('\n');
+	let rendered_page = rawfile;
+
+	// process frontmatter
+	let rawfile_arr = rendered_page.split('\n');
 	let i = 0;
 	let frontmatter = '';
 	if (['---\r', '---'].includes(rawfile_arr[i++]) ) {
@@ -86,7 +90,6 @@ function buildFile(fname) {
 	if (!y) {
 		i = 0;
 	}
-
 	// special handling for categories and tags
 	if (y && y.tags && 'string' == typeof y.tags ) {
 		y.tags = y.tags.trim().split(/ +/)
@@ -94,25 +97,32 @@ function buildFile(fname) {
 	if (y && y.categories && 'string' == typeof y.categories ) {
 		y.categories = y.categories.trim().split(/ +/)
 	}
-
 	process.stdout.write('Yaml: ');
 	console.log(y);
 
 	rawfile_arr = rawfile_arr.slice(i);
-	rendered = rawfile_arr.join('\n');
+	rendered_page = rawfile_arr.join('\n'); // without front matter
 
-	const layout = 'lay1'
+	// read _config.yml
+	let config_yml = yaml.safeLoad(fs.readFileSync(`${SRC_DIR}/_config.yml`, {encoding: 'utf8'}))
+	console.log(config_yml);
+	//process.exit(0)
 
-	// the order matters here (Liquid always needs to be the first?)
-	rendered = `
-	{% layout "_layouts/${layout}.html" %}
-	{% block content %}\n${rendered}{% endblock %}
-	`.trim()
-	rendered = liquid.parseAndRenderSync(rendered, {'page':y});
-	rendered = marked(rendered);
+	// 1) Interpreting Liquid expressions in the file
+	rendered_page = liquid.parseAndRenderSync(rendered_page,
+			{page:y,site:config_yml});
+
+	// 2) Unleashing the converters (markdown)
+	rendered_page = marked(rendered_page);
+
+	// 3) Populating the layouts
+	const layout = 'rn2020-default' // TODO: take from _config.yml -> layout
+	let rendered_layout = liquid.parseAndRenderSync(
+	fs.readFileSync(`${SRC_DIR}/_layouts/${layout}.html`, {encoding: 'utf8'})
+	, {page:y, site:config_yml, content:rendered_page});
 
 	let dst_fname = `${DST_DIR}/${fname.replace(/\.md$/i, '.html')}`;
-	fs.writeFileSync(dst_fname, rendered);
+	fs.writeFileSync(dst_fname, rendered_layout);
 }
 
 function build(args) {
@@ -141,7 +151,7 @@ const PORT = parseInt(args.P) || 4000;
 const SRC_DIR = args.source || __dirname + '/src';
 const DST_DIR = args.destination || __dirname + '/_site';
 
-const liquid = new Liquid({root:SRC_DIR});
+const liquid = new Liquid({root:SRC_DIR+'/_includes/', dynamicPartials:false});
 
 args.func(args)
 
