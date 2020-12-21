@@ -33,32 +33,15 @@ let args = parser.parse_args();
 
 console.log(args)
 
-const PORT = args.P ? parseInt(args.P) : 4000;
-const SRC_DIR = args.source ? args.source : __dirname + '/src';
+const PORT = parseInt(args.P) || 4000;
+const SRC_DIR = args.source || __dirname + '/src';
 
 /////////////////
 // read .md file
 
 const fs = require('fs')
-let dir = fs.opendirSync(SRC_DIR);
-let fname;
-while (true) {
-	let dirent =dir.readSync();
-	if (!dirent) break;
-	if (dirent.isFile()) {
-		fname = dirent.name;
-	}
-}
-dir.closeSync()
-
-let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
 
 
-/////////////////
-// render
-
-const marked = require('marked')
-let rendered = marked(rawfile)
 
 
 /////////////////
@@ -67,9 +50,38 @@ let rendered = marked(rawfile)
 const express = require('express');
 const app = express();
 
+const LIVE_RELOAD = `
+<script id="__bs_script__">//<![CDATA[
+    document.write("<script async src='http://HOST:3000/browser-sync/browser-sync-client.js?v=2.26.13'><\\/script>".replace("HOST", location.hostname));
+//]]></script>
+`.trim()
+
+console.log(LIVE_RELOAD)
+
+const marked = require('marked')
+
 app.get('/', (req,res) => {
-	res.send(rendered)
+	/////////////////
+	// render
+	let dir = fs.opendirSync(SRC_DIR);
+	let fname;
+	while (true) {
+		let dirent =dir.readSync();
+		if (!dirent) break;
+		if (dirent.isFile()) {
+			fname = dirent.name;
+		}
+	}
+	dir.closeSync()
+
+	let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
+
+	let rendered = marked(rawfile)
+
+	res.send('<html><body>' +new Date(Date.now()).toLocaleString() +rendered
+		+ LIVE_RELOAD + '</body></html>')
 });
+
 
 app.listen(PORT).on('error', (err) => {
 		console.log('Error: ' + err)
