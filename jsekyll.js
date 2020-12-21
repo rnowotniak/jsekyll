@@ -16,7 +16,8 @@ const marked = require('marked')
 const express = require('express');
 const app = express();
 
-let template_variables = {name:'ro**be**rt _n_', posts:['post1', 'post2', 'PoST3']}
+const INPUT_FILES_REGEXP = /\.(html|htm|md)$/i;
+
 
 
 let fsTimeout = false;
@@ -116,14 +117,21 @@ function buildFile(fname) {
 	rendered_page = marked(rendered_page);
 
 	// 3) Populating the layouts
-	const layout = 'rn2020-default' // TODO: take from _config.yml -> layout
-	let rendered_layout = liquid.parseAndRenderSync(
-	fs.readFileSync(`${SRC_DIR}/_layouts/${layout}.html`, {encoding: 'utf8'})
-	, {page:y, site:config_yml, content:rendered_page});
+	let rendered_layout;
+	const layout = config_yml.layout;
+	if (layout) {
+		rendered_layout = liquid.parseAndRenderSync(
+				fs.readFileSync(`${SRC_DIR}/_layouts/${layout}.html`, {encoding: 'utf8'})
+				, {page:y, site:config_yml, content:rendered_page});
+	} else {
+		console.error("No layout specified");
+		rendered_layout = rendered_page;
+	}
 
 	let dst_fname = `${DST_DIR}/${fname.replace(/\.md$/i, '.html')}`;
 	fs.writeFileSync(dst_fname, rendered_layout);
 }
+
 
 function build(args) {
 	console.log(`building site ${SRC_DIR} -> ${DST_DIR}`)
@@ -134,7 +142,7 @@ function build(args) {
 	while (true) {
 		let dirent = dir.readSync();
 		if (!dirent) break;
-		if (dirent.isFile()) {
+		if (dirent.isFile() && dirent.name.match(INPUT_FILES_REGEXP)) {
 			buildFile(dirent.name);
 		}
 	}
@@ -216,6 +224,7 @@ app.get('/', (req,res) => {
 		rawfile_arr = rawfile_arr.slice(i)
 		rendered = rawfile_arr.join('\n')
 
+		let template_variables = {name:'ro**be**rt _n_', posts:['post1', 'post2', 'PoST3']}
 		rendered = liquid.parseAndRenderSync(rendered, template_variables);
 		rendered = marked(rendered);
 	/***** UNTIL HERE  *******/

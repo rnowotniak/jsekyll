@@ -1,15 +1,20 @@
 # Minimalistic SSG
 
+Only subset of Jekyll is supported.  Sipmlified,
+but due to simplicity allows to keep all processing under control.
 
 ## TODO
 
-* permalink / routing / URLs
-* additional liquid tags:  {% link _posts/020302-fasd.md %} {% post_url %}
-* page variables:   {{ page.var }}
+* fix 'serve' subcommand
 
+* permalink / routing / URLs
+* additional liquid tags:  { % link _posts/020302-fasd.md % } { % post_url % }
 * files structure (other that Jekyll's _/post/YYYY-MM-DD-....) - what then?
 
-Done:
+## Done
+
+* process files selectively
+* page variables:   {{ page.var }}
 * _layouts
 * _config.yml (to liquid vars  site.var)
 * generate actual files (_site/....)
@@ -19,7 +24,7 @@ Done:
 * liquid templates - POC done
 * livereload - POC done
 
-konwencja: (jak w Jekyllu?)
+Conventions (similar to Jekyll):
 * layot _layouts/lay1(.html)  ?
 * include _includes/inc1(.html)  ?
 
