@@ -45,7 +45,7 @@ const fs = require('fs')
 
 let { Liquid } = require('liquidjs');
 let liquid = new Liquid();
-let template_variables = {name:'rob'}
+let template_variables = {name:'ro**be**rt _n_'}
 //console.log(liquid.parseAndRenderSync('Czesc {{name | capitalize}}', template_variables))
 
 //process.exit(1)
@@ -81,7 +81,10 @@ app.get('/', (req,res) => {
 
 	let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
 
-	let rendered = marked(rawfile)
+	// the order makes some difference here (liquid or marked first)
+	let rendered = rawfile;
+	rendered = liquid.parseAndRenderSync(rendered, template_variables);
+	rendered = marked(rendered);
 
 	res.send('<html><body>' +new Date(Date.now()).toLocaleString() +rendered
 		+ LIVE_RELOAD + '</body></html>')
