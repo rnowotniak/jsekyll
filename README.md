@@ -5,11 +5,17 @@ but due to simplicity allows to keep all processing under control.
 
 ## TODO
 
+* load data from _data/*.yml
 * fix 'serve' subcommand
 
 * permalink / routing / URLs
 * additional liquid tags:  { % link _posts/020302-fasd.md % } { % post_url % }
 * files structure (other that Jekyll's _/post/YYYY-MM-DD-....) - what then?
+
+## Not supported and not planned
+
+Simply because I was never using these in Jekyll:
+* SCSS
 
 ## Done
 
