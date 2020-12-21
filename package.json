@@ -27,9 +27,11 @@
     "express": "^4.17.1",
     "liquid": "^5.1.1",
     "liquidjs": "^9.19.0",
-    "marked": "^1.2.7"
+    "marked": "^1.2.7",
+    "nodemon": "^2.0.6"
   },
   "devDependencies": {
-    "browser-sync": "^2.26.13"
+    "browser-sync": "^2.26.13",
+    "jslint": "^0.12.1"
   }
 }

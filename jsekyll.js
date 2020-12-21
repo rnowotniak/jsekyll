@@ -7,16 +7,35 @@
  */
 'use strict';
 
+
+const fs = require('fs')
 const { ArgumentParser } = require('argparse');
 
 
+let fsTimeout = false;
+function fsChangeFnGen(dir) {
+	return (eventType, filename) => {
+		if (!filename) { return; }
+		if (fsTimeout) { return; }
+		fsTimeout = setTimeout(function() { fsTimeout=null }, 2000);
+
+		console.log(`event type is: ${eventType}`);
+		console.log(`filename provided: ${dir} / ${filename}`);
+	}
+}
+
+fs.watch('tests/page1/', fsChangeFnGen('tests/page1'));
+fs.watch('tests/page1/a',fsChangeFnGen('tests/page1/a'));
+
+
 if (require.main !== module) {
+	// run as module (require()'d / import()'ed file)
 	return "??"; // XXX
 }
 
 
 // Parse arguments
-const parser = new ArgumentParser({description:"Minimalistic Static-Site Generator (similar to Jekyll) but in JavaScript"})
+const parser = new ArgumentParser({description:"Minimalistic Static-Site Generator (similar to Jekyll) but in JavaScript"});
 parser.add_argument('--destination', '-d', { metavar:'dst_dir', type:'string', help:'destination directory'});
 parser.add_argument('--source', '-s', { metavar:'src_dir', type:'string', help:'Source directory'});
 
@@ -36,7 +55,6 @@ console.log(args)
 const PORT = parseInt(args.P) || 4000;
 const SRC_DIR = args.source || __dirname + '/src';
 
-const fs = require('fs')
 
 
 let { Liquid } = require('liquidjs');
@@ -53,8 +71,6 @@ const LIVE_RELOAD = `
 //]]></script>
 `.trim()
 
-console.log(LIVE_RELOAD)
-
 const marked = require('marked')
 
 let dir = fs.opendirSync(SRC_DIR);
@@ -70,6 +86,7 @@ dir.closeSync()
 
 app.get('/', (req,res) => {
 
+	console.log(`Re-rendering file ${fname}`)
 	let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
 
 	// the order makes some difference here (liquid or marked first)
