@@ -36,22 +36,13 @@ console.log(args)
 const PORT = parseInt(args.P) || 4000;
 const SRC_DIR = args.source || __dirname + '/src';
 
-/////////////////
-// read .md file
-
 const fs = require('fs')
-
 
 
 let { Liquid } = require('liquidjs');
 let liquid = new Liquid();
 let template_variables = {name:'ro**be**rt _n_'}
-//console.log(liquid.parseAndRenderSync('Czesc {{name | capitalize}}', template_variables))
 
-//process.exit(1)
-
-/////////////////
-// serve
 
 const express = require('express');
 const app = express();
