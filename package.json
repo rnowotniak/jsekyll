@@ -1,0 +1,30 @@
+{
+  "name": "jsekyll",
+  "version": "0.0.1",
+  "description": "Minimalistic Static-Site Generator (similar to Jekyll) but in JavaScript",
+  "main": "jsekyll.js",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rnowotniak/jsekyll.git"
+  },
+  "keywords": [
+    "ssg",
+    "static",
+    "generator"
+  ],
+  "author": "Robert Nowotniak <rnowotniak@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rnowotniak/jsekyll/issues"
+  },
+  "homepage": "https://github.com/rnowotniak/jsekyll#readme",
+  "dependencies": {
+    "argparse": "^2.0.1",
+    "express": "^4.17.1",
+    "liquid": "^5.1.1",
+    "marked": "^1.2.7"
+  }
+}
