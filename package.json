@@ -4,7 +4,8 @@
   "description": "Minimalistic Static-Site Generator (similar to Jekyll) but in JavaScript",
   "main": "jsekyll.js",
   "scripts": {
-    "test": "npm run test"
+    "test": "npm run test",
+    "bsync": "browser-sync start --files tests/page1"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,7 @@
     "argparse": "^2.0.1",
     "express": "^4.17.1",
     "liquid": "^5.1.1",
+    "liquidjs": "^9.19.0",
     "marked": "^1.2.7"
   },
   "devDependencies": {

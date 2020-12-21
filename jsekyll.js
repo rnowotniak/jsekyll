@@ -43,6 +43,12 @@ const fs = require('fs')
 
 
 
+let { Liquid } = require('liquidjs');
+let liquid = new Liquid();
+let template_variables = {name:'rob'}
+//console.log(liquid.parseAndRenderSync('Czesc {{name | capitalize}}', template_variables))
+
+//process.exit(1)
 
 /////////////////
 // serve
@@ -60,19 +66,18 @@ console.log(LIVE_RELOAD)
 
 const marked = require('marked')
 
-app.get('/', (req,res) => {
-	/////////////////
-	// render
-	let dir = fs.opendirSync(SRC_DIR);
-	let fname;
-	while (true) {
-		let dirent =dir.readSync();
-		if (!dirent) break;
-		if (dirent.isFile()) {
-			fname = dirent.name;
-		}
+let dir = fs.opendirSync(SRC_DIR);
+let fname;
+while (true) {
+	let dirent =dir.readSync();
+	if (!dirent) break;
+	if (dirent.isFile()) {
+		fname = dirent.name;
 	}
-	dir.closeSync()
+}
+dir.closeSync()
+
+app.get('/', (req,res) => {
 
 	let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
 
