@@ -67,8 +67,22 @@ const DST_DIR = args.destination || DEFAULT_DST_DIR;
 
 const liquid = new Liquid({root:SRC_DIR+'/_includes/', dynamicPartials:false});
 
+// Register Liquid custom tags
+liquid.registerTag('highlight', {
+    render: function(scope, hash) {
+	return '<pre><code>';
+    }
+});
+liquid.registerTag('endhighlight', {
+    render: function(scope, hash) {
+        return '</code></pre>';
+    }
+});
+
+
 // run the subcommand, respectively
 args.subcommand(args)
+
 
 
 
@@ -80,7 +94,7 @@ function serve(args) {
 
 	const app = express();
 
-	app.get('/', (req,res) => {res.sendFile('README.html', {root:DEFAULT_DST_DIR})});
+	app.get('/', (req,res) => {res.sendFile('index.html', {root:DEFAULT_DST_DIR})});
 	app.use(express.static(DEFAULT_DST_DIR));
 	app.listen(PORT).on('error', (err) => {
 			console.log('Error: ' + err)
@@ -156,9 +170,12 @@ function buildFile(fname) {
 	// 1) Interpreting Liquid expressions in the file
 	rendered_page = liquid.parseAndRenderSync(rendered_page,
 			{page:y,site});
+	//console.log(rendered_page);
 
 	// 2) Unleashing the converters (markdown)
-	rendered_page = marked(rendered_page);
+	if (fname.endsWith('.md')) {
+		rendered_page = marked(rendered_page);
+	}
 
 	// 3) Populating the layouts
 	let rendered_layout;

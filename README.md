@@ -19,6 +19,7 @@ Simply because I was never using these in Jekyll:
 
 ## Done
 
+* MarkDown support with Marked lib
 * process files selectively
 * page variables:   {{ page.var }}
 * _layouts
