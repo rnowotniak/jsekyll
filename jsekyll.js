@@ -9,7 +9,15 @@
 
 
 const fs = require('fs')
+const yaml = require('js-yaml');
 const { ArgumentParser } = require('argparse');
+const { Liquid } = require('liquidjs');
+const liquid = new Liquid();
+const marked = require('marked')
+const express = require('express');
+const app = express();
+
+let template_variables = {name:'ro**be**rt _n_', posts:['post1', 'post2', 'PoST3']}
 
 
 let fsTimeout = false;
@@ -54,9 +62,68 @@ function serve(args) {
 	console.log(args)
 }
 
+function buildFile(fname) {
+	console.log('Building ' + fname);
+	let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
+
+	// the order makes some difference here (liquid or marked first)
+	let rendered = rawfile;
+	let rawfile_arr = rendered.split('\n');
+	let i = 0;
+	let frontmatter = '';
+	if (['---\r', '---'].includes(rawfile_arr[i++]) ) {
+		// read frontmatter
+		while (i < rawfile_arr.length) {
+			if (['---\r', '---'].includes(rawfile_arr[i]) ) {
+				break
+			}
+			frontmatter += rawfile_arr[i] + "\n";
+			i += 1;
+		}
+		i += 1;
+		//console.log("Frontmatter: " + frontmatter);
+	}
+	let y = yaml.safeLoad(frontmatter);
+	if (!y) {
+		i = 0;
+	}
+
+	// special handling for categories and tags
+	if (y && y.tags && 'string' == typeof y.tags ) {
+		y.tags = y.tags.trim().split(/ +/)
+	}
+	if (y && y.categories && 'string' == typeof y.categories ) {
+		y.categories = y.categories.trim().split(/ +/)
+	}
+
+	process.stdout.write('Yaml: ');
+	console.log(y);
+
+	rawfile_arr = rawfile_arr.slice(i);
+	rendered = rawfile_arr.join('\n');
+
+	rendered = liquid.parseAndRenderSync(rendered, template_variables);
+	rendered = marked(rendered);
+
+	let dst_fname = `${DST_DIR}/${fname.replace(/\.md$/i, '.html')}`;
+	fs.writeFileSync(dst_fname, rendered);
+}
+
 function build(args) {
-	console.log('building site to ' + DST_DIR)
+	console.log(`building site ${SRC_DIR} -> ${DST_DIR}`)
 	console.log(args)
+
+	let dir = fs.opendirSync(SRC_DIR);
+	let fname;
+	while (true) {
+		let dirent = dir.readSync();
+		if (!dirent) break;
+		if (dirent.isFile()) {
+			buildFile(dirent.name);
+		}
+	}
+	dir.closeSync()
+
 	process.exit(0)
 }
 
@@ -72,13 +139,8 @@ args.func(args)
 
 
 
-let { Liquid } = require('liquidjs');
-let liquid = new Liquid();
-let template_variables = {name:'ro**be**rt _n_', posts:['post1', 'post2', 'PoST3']}
 
 
-const express = require('express');
-const app = express();
 
 const LIVE_RELOAD = `
 <script id="__bs_script__">//<![CDATA[
@@ -86,7 +148,6 @@ const LIVE_RELOAD = `
 //]]></script>
 `.trim()
 
-const marked = require('marked')
 
 let dir = fs.opendirSync(SRC_DIR);
 let fname;
@@ -100,48 +161,50 @@ while (true) {
 dir.closeSync()
 
 
-const yaml = require('js-yaml');
 
 app.get('/', (req,res) => {
 
 	console.log(`Re-rendering file ${fname}`)
-	let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
 
-	// the order makes some difference here (liquid or marked first)
-	let rendered = rawfile;
-	let rawfile_arr = rendered.split('\n')
-	let i = 0;
-	let frontmatter = ''
-	if (['---\r', '---'].includes(rawfile_arr[i++]) ) {
-		// read frontmatter
-		while (i < rawfile_arr.length) {
-			if (['---\r', '---'].includes(rawfile_arr[i]) ) {
-				break
+	/***** CUT THIS *******/
+		let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
+
+		// the order makes some difference here (liquid or marked first)
+		let rendered = rawfile;
+		let rawfile_arr = rendered.split('\n')
+		let i = 0;
+		let frontmatter = ''
+		if (['---\r', '---'].includes(rawfile_arr[i++]) ) {
+			// read frontmatter
+			while (i < rawfile_arr.length) {
+				if (['---\r', '---'].includes(rawfile_arr[i]) ) {
+					break
+				}
+				frontmatter += rawfile_arr[i] + "\n";
+				i += 1;
 			}
-			frontmatter += rawfile_arr[i] + "\n";
 			i += 1;
+			console.log("Frontmatter: " + frontmatter);
 		}
-		i += 1;
-		console.log("Frontmatter: " + frontmatter);
-	}
-	let y = yaml.safeLoad(frontmatter)
+		let y = yaml.safeLoad(frontmatter)
 
-	// special handling for categories and tags
-	if ('string' == typeof y.tags ) {
-		y.tags = y.tags.trim().split(/ +/)
-	}
-	if ('string' == typeof y.categories ) {
-		y.categories = y.categories.trim().split(/ +/)
-	}
+		// special handling for categories and tags
+		if ('string' == typeof y.tags ) {
+			y.tags = y.tags.trim().split(/ +/)
+		}
+		if ('string' == typeof y.categories ) {
+			y.categories = y.categories.trim().split(/ +/)
+		}
 
-	process.stdout.write('Yaml: ')
-	console.log(y)
+		process.stdout.write('Yaml: ')
+		console.log(y)
 
-	rawfile_arr = rawfile_arr.slice(i)
-	rendered = rawfile_arr.join('\n')
+		rawfile_arr = rawfile_arr.slice(i)
+		rendered = rawfile_arr.join('\n')
 
-	rendered = liquid.parseAndRenderSync(rendered, template_variables);
-	rendered = marked(rendered);
+		rendered = liquid.parseAndRenderSync(rendered, template_variables);
+		rendered = marked(rendered);
+	/***** UNTIL HERE  *******/
 
 	res.send('<html><body>' +new Date(Date.now()).toLocaleString() +rendered
 		+ LIVE_RELOAD + '</body></html>')
