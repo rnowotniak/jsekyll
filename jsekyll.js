@@ -16,19 +16,21 @@ const { Liquid } = require('liquidjs');
 const marked = require('marked');
 const express = require('express');
 
+
 const INPUT_FILES_REGEXP = /\.(html|htm|md)$/i;
+const DEFAULT_DST_DIR = './_site'
 
 
 
-let fsTimeout = false;
+let _suppressNotifications = false;
 function fsChangeFnGen(dir) {
 	return (eventType, filename) => {
 		if (!filename) { return; }
-		if (fsTimeout) { return; }
-		fsTimeout = setTimeout(function() { fsTimeout=null }, 2000);
+		if (_suppressNotifications) { return; }
+		_suppressNotifications = setTimeout(function() {
+				_suppressNotifications=null }, 2000);
 
-		console.log(`event type is: ${eventType}`);
-		console.log(`filename provided: ${dir} / ${filename}`);
+		console.log(`file changed ${eventType}: ${dir} / ${filename}`);
 	}
 }
 fs.watch('tests/page1/', fsChangeFnGen('tests/page1'));
@@ -46,15 +48,29 @@ const parser = new ArgumentParser({description:"Minimalistic Static-Site Generat
 parser.add_argument('--destination', '-d', { type:'string', help:'destination directory'});
 parser.add_argument('--source', '-s', { type:'string', help:'Source directory'});
 
+// server / server /s   parser
 let subparsers = parser.add_subparsers({title:'subcommands'})
 let parser_s = subparsers.add_parser('server', { aliases:['serve', 's'], help:'Serve your site locally'} )
-// Bug:  argparse seems not to support subparser metavar
 parser_s.add_argument('-P', { help: 'Port to listen'})
 parser_s.add_argument('-l', { action: 'store_true', help: 'Use LiveReload to automatically refresh browsers'})
 parser_s.add_argument('-H', { help: 'Host to bind to'})
 parser_s.set_defaults({subcommand:serve})
 
-const DEFAULT_DST_DIR = './_site'
+// build /b   parser
+let parser_b = subparsers.add_parser('build', { aliases:['b'], help:'Build your site'} )
+parser_b.set_defaults({subcommand:build});
+
+let args = parser.parse_args();
+const PORT = parseInt(args.P) || 4000;
+const SRC_DIR = args.source || __dirname + '/src';
+const DST_DIR = args.destination || DEFAULT_DST_DIR;
+
+const liquid = new Liquid({root:SRC_DIR+'/_includes/', dynamicPartials:false});
+
+// run the subcommand, respectively
+args.subcommand(args)
+
+
 
 
 
@@ -64,93 +80,12 @@ function serve(args) {
 
 	const app = express();
 
-	////////////
-	app.get('/', (req,res) => {res.sendFile('README.html', {root:'_site'})});
-	app.use(express.static('_site'));
+	app.get('/', (req,res) => {res.sendFile('README.html', {root:DEFAULT_DST_DIR})});
+	app.use(express.static(DEFAULT_DST_DIR));
 	app.listen(PORT).on('error', (err) => {
 			console.log('Error: ' + err)
 			process.exit(1)
-			})
-	return 0;
-	////////////
-
-
-
-	// find any file
-	let dir = fs.opendirSync(SRC_DIR);
-	let fname;
-	while (true) {
-		let dirent =dir.readSync();
-		if (!dirent) break;
-		if (dirent.isFile()) {
-			fname = dirent.name;
-		}
-	}
-	dir.closeSync();
-
-	const LIVE_RELOAD = `
-		<script id="__bs_script__">//<![CDATA[
-		document.write("<script async src='http://HOST:3000/browser-sync/browser-sync-client.js?v=2.26.13'><\\/script>".replace("HOST", location.hostname));
-	//]]></script>
-	`.trim()
-
-
-
-	app.get('/.*', (req,res) => {
-			console.log(`HTTP requested ${req.path}`)
-
-			console.log(`Re-rendering file ${fname}`)
-
-			/***** CUT THIS *******/  /* dont do any improvements here */
-			let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
-
-			// the order makes some difference here (liquid or marked first)
-			let rendered = rawfile;
-			let rawfile_arr = rendered.split('\n')
-			let i = 0;
-			let frontmatter = ''
-			if (['---\r', '---'].includes(rawfile_arr[i++]) ) {
-			// read frontmatter
-			while (i < rawfile_arr.length) {
-			if (['---\r', '---'].includes(rawfile_arr[i]) ) {
-				break
-			}
-			frontmatter += rawfile_arr[i] + "\n";
-			i += 1;
-			}
-			i += 1;
-			console.log("Frontmatter: " + frontmatter);
-			}
-			let y = yaml.safeLoad(frontmatter);
-
-			// special handling for categories and tags
-			if ('string' == typeof y.tags ) {
-				y.tags = y.tags.trim().split(/ +/)
-			}
-			if ('string' == typeof y.categories ) {
-				y.categories = y.categories.trim().split(/ +/)
-			}
-
-			process.stdout.write('Yaml: ');
-			console.log(y);
-
-			rawfile_arr = rawfile_arr.slice(i);
-			rendered = rawfile_arr.join('\n');
-
-			let template_variables = {name:'ro**be**rt _n_', posts:['post1', 'post2', 'PoST3']}
-			rendered = liquid.parseAndRenderSync(rendered, template_variables);
-			rendered = marked(rendered);
-			/***** UNTIL HERE  *******/
-
-			res.send('<html><body>' +new Date(Date.now()).toLocaleString() +rendered
-					+ LIVE_RELOAD + '</body></html>')
-	});
-
-
-	app.listen(PORT).on('error', (err) => {
-			console.log('Error: ' + err)
-			process.exit(1)
-			})
+			});
 }
 
 
@@ -255,23 +190,9 @@ function build(args) {
 			buildFile(dirent.name);
 		}
 	}
-	dir.closeSync()
-
-		process.exit(0)
+	dir.closeSync();
 }
 
-let parser_b = subparsers.add_parser('build', { aliases:['b'], help:'Build your site'} )
-parser_b.set_defaults({subcommand:build});
-
-let args = parser.parse_args();
-const PORT = parseInt(args.P) || 4000;
-const SRC_DIR = args.source || __dirname + '/src';
-const DST_DIR = args.destination || __dirname + '/_site';
-
-const liquid = new Liquid({root:SRC_DIR+'/_includes/', dynamicPartials:false});
-
-// run a subcommand, respectively
-args.subcommand(args)
 
 
 
