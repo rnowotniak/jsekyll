@@ -105,49 +105,108 @@ function serve(args) {
 
 /*
  * For comparison: https://jekyllrb.com/docs/rendering-process/
+ *
+ * Warning: it updates 'site' array! (tags, categories)
+ *    (TODO: remove this functionality. This would require a second run over all files anyway)
  */
-function buildFile(fname) {
-	console.log('Building ' + fname);
-	let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
+function buildFile(fname, site) {
+	console.log('-> Processing ' + fname);
 
+	// TODO:  here distinsuish  .htm(l) / .md / others
+
+
+	let rawfile = fs.readFileSync(`${SRC_DIR}/${fname}`, {encoding: 'utf8'});
 	let rendered_page = rawfile;
 
 	// process frontmatter
 	let rawfile_arr = rendered_page.split('\n');
 	let i = 0;
-	let frontmatter = '';
+	let frontmatter_text = '';
 	if (['---\r', '---'].includes(rawfile_arr[i++]) ) {
 		// read frontmatter
 		while (i < rawfile_arr.length) {
 			if (['---\r', '---'].includes(rawfile_arr[i]) ) {
 				break
 			}
-			frontmatter += rawfile_arr[i] + "\n";
+			frontmatter_text += rawfile_arr[i] + "\n";
 			i += 1;
 		}
 		i += 1;
-		//console.log("Frontmatter: " + frontmatter);
+		//console.log("Frontmatter: " + frontmatter_text);
 	}
-	let y = yaml.safeLoad(frontmatter);
-	if (!y) {
+	let frontmatter = yaml.safeLoad(frontmatter_text);
+	if (!frontmatter) {
 		i = 0;
 	}
 	// special handling for categories and tags
-	if (y && y.tags && 'string' == typeof y.tags ) {
-		y.tags = y.tags.trim().split(/ +/)
+	if (frontmatter && frontmatter.tags && 'string' == typeof frontmatter.tags ) {
+		frontmatter.tags = frontmatter.tags.trim().split(/ +/)
+		site.tags.push(frontmatter.tags)
 	}
-	if (y && y.categories && 'string' == typeof y.categories ) {
-		y.categories = y.categories.trim().split(/ +/)
+	if (frontmatter && frontmatter.categories && 'string' == typeof frontmatter.categories ) {
+		frontmatter.categories = frontmatter.categories.trim().split(/ +/)
+		site.categories.push(frontmatter.categories)
 	}
 	process.stdout.write('Yaml: ');
-	console.log(y);
+	console.log(frontmatter);
 
 	rawfile_arr = rawfile_arr.slice(i);
 	rendered_page = rawfile_arr.join('\n'); // without front matter
 
 
-	// TODO:  reading these files is repetable, should be extracted outside of this function
-	// read _config.yml and _data/*.yml
+
+
+	// 1) Interpreting Liquid expressions in the file
+	rendered_page = liquid.parseAndRenderSync(rendered_page,
+			{page:frontmatter,site});
+	//console.log(rendered_page);
+
+	// 2) Unleashing the converters (markdown)
+	if (fname.endsWith('.md')) {
+		rendered_page = marked(rendered_page);
+	}
+
+	// 3) Populating the layouts
+	let output_text;
+	const layout = site.layout;
+	if (layout) {
+		output_text = liquid.parseAndRenderSync(
+				fs.readFileSync(`${SRC_DIR}/_layouts/${layout}.html`, {encoding: 'utf8'})
+				, {page:frontmatter, site, content:rendered_page});
+	} else {
+		console.error("No layout specified");
+		output_text = rendered_page;
+	}
+
+	// Generate the output destination path
+	let dst_path;
+	if (fname.match(/\.html?$/i)) {
+		console.log('html file');
+		dst_path = `${DST_DIR}/${fname}`; // TODO: This is disputable
+	}
+	else if (fname.match(/\.md$/)) {
+		let dir = `${DST_DIR}/${fname.replace(/\.md$/i, '')}`;
+		try {
+			fs.mkdirSync(dir);
+		} catch (err) {
+			if (err.code != 'EEXIST') {
+				throw(err);
+			}
+		}
+		dst_path = dir + '/index.html';
+	}
+
+	console.log('Writing ' + dst_path);
+	fs.writeFileSync(dst_path, output_text);
+}
+
+
+function build(args) {
+	console.log(`building site ${SRC_DIR} -> ${DST_DIR}`);
+	console.log(args);
+
+	console.log('Loading _config.yml and _data/*.yml');
+
 	let config_yml = yaml.safeLoad(fs.readFileSync(`${SRC_DIR}/_config.yml`, {encoding: 'utf8'}));
 	console.log(config_yml);
 	let site = {...config_yml, data:{}}
@@ -166,48 +225,19 @@ function buildFile(fname) {
 	}
 	dir.closeSync();
 
+	console.log('---');
 
-	// 1) Interpreting Liquid expressions in the file
-	rendered_page = liquid.parseAndRenderSync(rendered_page,
-			{page:y,site});
-	//console.log(rendered_page);
-
-	// 2) Unleashing the converters (markdown)
-	if (fname.endsWith('.md')) {
-		rendered_page = marked(rendered_page);
-	}
-
-	// 3) Populating the layouts
-	let rendered_layout;
-	const layout = config_yml.layout;
-	if (layout) {
-		rendered_layout = liquid.parseAndRenderSync(
-				fs.readFileSync(`${SRC_DIR}/_layouts/${layout}.html`, {encoding: 'utf8'})
-				, {page:y, site, content:rendered_page});
-	} else {
-		console.error("No layout specified");
-		rendered_layout = rendered_page;
-	}
-
-	let dst_fname = `${DST_DIR}/${fname.replace(/\.md$/i, '.html')}`;
-	fs.writeFileSync(dst_fname, rendered_layout);
-}
-
-
-function build(args) {
-	console.log(`building site ${SRC_DIR} -> ${DST_DIR}`);
-	console.log(args);
-
-	let dir = fs.opendirSync(SRC_DIR);
+	let srcdir_fd = fs.opendirSync(SRC_DIR);
 	let fname;
 	while (true) {
-		let dirent = dir.readSync();
+		let dirent = srcdir_fd.readSync();
 		if (!dirent) break;
 		if (dirent.isFile() && dirent.name.match(INPUT_FILES_REGEXP)) {
-			buildFile(dirent.name);
+			buildFile(dirent.name, site);
 		}
 	}
-	dir.closeSync();
+	srcdir_fd.closeSync();
+	process.exit(0);
 }
 
 

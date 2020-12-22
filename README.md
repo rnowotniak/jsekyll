@@ -12,6 +12,9 @@ but due to simplicity allows to keep all processing under control.
 * additional liquid tags:  { % link _posts/020302-fasd.md % } { % post_url % }
 * files structure (other that Jekyll's _/post/YYYY-MM-DD-....) - what then?
 
+Caveat: JSekyll is inspired with Jekyll and mimics large part of Jekyll,
+but it is far from 100% compabitle.
+
 ## Not supported and not planned
 
 Simply because I was never using these in Jekyll:
