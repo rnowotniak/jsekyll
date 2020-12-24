@@ -180,7 +180,25 @@ function buildFile(fname, site) {
 
 	// Generate the output destination path
 	let dst_path;
-	if (fname.match(/\.html?$/i)) {
+	if (frontmatter && frontmatter.permalink) {
+		// permalink was specified
+		let bname = path.basename(frontmatter.permalink).toLowerCase();
+		if (bname.endsWith('.html') || bname.endsWith('.htm')) {
+			dst_path = DST_DIR + '/' + frontmatter.permalink;
+		}
+		else {
+			let dir = `${DST_DIR}/${frontmatter.permalink}`;
+			try {
+				fs.mkdirSync(dir, {recursive:true});
+			} catch (err) {
+				if (err.code != 'EEXIST') {
+					throw(err);
+				}
+			}
+			dst_path = dir + '/index.html';
+		}
+	}
+	else if (fname.match(/\.html?$/i)) {
 		console.log('html file');
 		dst_path = `${DST_DIR}/${fname}`; // TODO: This is disputable
 	}

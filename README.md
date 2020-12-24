@@ -5,7 +5,6 @@ but due to simplicity allows to keep all processing under control.
 
 ## TODO
 
-* load data from _data/*.yml
 * fix 'serve' subcommand
 
 * permalink / routing / URLs
@@ -20,9 +19,13 @@ but it is far from 100% compabitle.
 Simply because I was never using these in Jekyll:
 * SCSS
 
-## Done
+## Implemented features
 
+* Two modes: build / serve
 * MarkDown support with Marked lib
+* Liquid templates support (LiquidJS)
+* Live Reload (browser-sync)
+* load data from _data/*.yml
 * process files selectively
 * page variables:   {{ page.var }}
 * _layouts
@@ -35,7 +38,7 @@ Simply because I was never using these in Jekyll:
 * livereload - POC done
 
 Conventions (similar to Jekyll):
-* layot _layouts/lay1(.html)  ?
+* layout _layouts/lay1
 * include _includes/inc1(.html)  ?
 
 
