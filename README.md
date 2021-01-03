@@ -5,18 +5,6 @@ Contact: Robert Nowotniak <<rnowotniak@gmail.com>>
 Only subset of Jekyll is supported.  Simplified,
 but thants to its simplicity it allows to keep all processing under control.
 
-## TODO
-
-* fix 'serve' subcommand
-
-* permalink / routing / URLs
-* additional liquid tags:  { % link _posts/020302-fasd.md % } { % post_url % }
-* files structure (other that Jekyll's _/post/YYYY-MM-DD-....) - what then?
-
-Caveat: JSekyll is inspired with Jekyll and mimics large part of Jekyll,
-but it is far from 100% compabitle.
-
-
 ## Implemented features
 
 * Two modes: build / serve
@@ -55,6 +43,18 @@ Structure:
 ## TODO perhaps some day in the future
 * themes
 * plugins
+
+## TODO
+
+* fix 'serve' subcommand
+
+* permalink / routing / URLs
+* additional liquid tags:  { % link _posts/020302-fasd.md % } { % post_url % }
+* files structure (other that Jekyll's _/post/YYYY-MM-DD-....) - what then?
+
+Caveat: JSekyll is inspired with Jekyll and mimics large part of Jekyll,
+but it is far from 100% compabitle.
+
 
 ## Not supported and not planned
 Simply because I was never using these in Jekyll:
