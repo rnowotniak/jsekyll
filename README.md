@@ -1,7 +1,9 @@
-# Minimalistic SSG
+# JSekyll - minimalistic Static Site Generator in JavaScript
 
-Only subset of Jekyll is supported.  Sipmlified,
-but due to simplicity allows to keep all processing under control.
+Contact: Robert Nowotniak <<rnowotniak@gmail.com>>
+
+Only subset of Jekyll is supported.  Simplified,
+but thants to its simplicity it allows to keep all processing under control.
 
 ## TODO
 
@@ -14,10 +16,6 @@ but due to simplicity allows to keep all processing under control.
 Caveat: JSekyll is inspired with Jekyll and mimics large part of Jekyll,
 but it is far from 100% compabitle.
 
-## Not supported and not planned
-
-Simply because I was never using these in Jekyll:
-* SCSS
 
 ## Implemented features
 
@@ -42,21 +40,28 @@ Conventions (similar to Jekyll):
 * include _includes/inc1(.html)  ?
 
 
-* structure:
-/img
-/404.html
+Structure:
+* /img
+* /404.html
 
-/_posts
-/_layout
-/assets ???
-_config.yml
-_data/
-_includes
-/_site
+* /_posts
+* /_layout
+* /assets ???
+* _config.yml
+* _data/
+* _includes
+* /_site
 
-
-### TODO perhaps some day in the future
-
+## TODO perhaps some day in the future
 * themes
 * plugins
 
+## Not supported and not planned
+Simply because I was never using these in Jekyll:
+* SCSS
+
+## References
+
+* https://jekyllrb.com/  -  Jekyll SSG, which inspired this work
+* https://nextjs.org/  - another SSG in JavaScript (React SSG)
+* https://css-tricks.com/building-a-blog-with-next-js/ (Next.js tutorial)
