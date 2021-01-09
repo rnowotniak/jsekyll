@@ -12,7 +12,7 @@ However, only a subset of Jekyll features is supported. Neither it is 100% compa
 
 * Two run modes: build / serve
 * Serving site locally in dev mode ([Express](https://expressjs.com/) JavaScript lib)
-* MarkDown support with [Marked JS](https://marked.js.org/) lib
+* MarkDown support with ([Marked JS](https://marked.js.org/) lib)
 * Liquid templates support ([LiquidJS](https://liquidjs.com/))
 * Live Reload ([browser-sync](https://browsersync.io/))
 * Load data from _data/*.yml
@@ -24,7 +24,6 @@ However, only a subset of Jekyll features is supported. Neither it is 100% compa
 * _config.yml configuration file (to liquid vars  site.var)
 * Multi-files support
 * Frontmatter support
-* Liquid templates support
 
 ## Example site
 
