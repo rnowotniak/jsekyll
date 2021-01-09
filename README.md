@@ -2,8 +2,9 @@
 
 Contact: Robert Nowotniak <<rnowotniak@gmail.com>>
 
-Only subset of Jekyll is supported.  Simplified,
+This tool is a minimalistic Static Site Generator inspired by Jekyll,
 but thants to its simplicity it allows to keep all processing under control.
+Only subset of Jekyll is supported.
 
 ## Implemented features
 

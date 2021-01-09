@@ -30,7 +30,7 @@
     "marked": "^1.2.7"
   },
   "devDependencies": {
-    "browser-sync": "^2.26.13",
+    "browser-sync": ">=2.26.13",
     "jslint": "^0.12.1"
   }
 }
