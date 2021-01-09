@@ -1,6 +1,6 @@
 {
   "name": "jsekyll",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Minimalistic Static-Site Generator (similar to Jekyll) but in JavaScript",
   "main": "jsekyll.js",
   "scripts": {
