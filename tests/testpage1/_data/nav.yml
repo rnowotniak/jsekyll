@@ -1,0 +1,8 @@
+- name: Main
+  link: /
+- name: Page1
+  link: /page1/
+- name: Page2
+  link: /page2/
+- name: (debug)
+  link: /debug/

@@ -1,0 +1,39 @@
+body {
+    background-color: #DDD;
+}
+
+#footer {
+    border: 1px solid red;
+    clear: both;
+    text-align: center;
+}
+
+#lab > .box {
+    color: red;
+    border: 1px solid black;
+    width: 30%;
+    float: left;
+}
+
+#lab > .box > p {
+    color: black;
+}
+
+#lab {
+    display: flex;
+    clear: both;
+    flex-direction: row;
+}
+
+:root {
+    color: green;
+}
+
+body::-webkit-scrollbar {
+    width: 100px;
+    color: green;
+}
+
+body::-webkit-scrollbar-track {
+    color: yellow;
+}

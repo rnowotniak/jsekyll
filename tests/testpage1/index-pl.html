@@ -1,0 +1,47 @@
+---
+title: My website - Polish version
+permalink: /pl/
+---
+    <h1>{{ page.title }}</h1>
+
+<p>
+	This is a Polish version of this website.
+</p>
+
+<p>
+	Est ultricies integer quis auctor elit sed vulputate mi. Habitasse platea
+	dictumst vestibulum rhoncus est pellentesque elit. Sed egestas egestas
+	fringilla phasellus faucibus scelerisque. Amet est placerat in egestas
+	erat imperdiet sed euismod. Ut sem nulla pharetra diam sit amet nisl
+	suscipit adipiscing. Sem integer vitae justo eget magna fermentum iaculis
+	eu non. Neque vitae tempus quam pellentesque nec nam. Pellentesque elit
+	eget gravida cum sociis natoque. Lorem mollis aliquam ut porttitor leo a
+	diam sollicitudin. Ut enim blandit volutpat maecenas volutpat. Etiam sit
+	amet nisl purus in mollis. Duis ut diam quam nulla porttitor massa id.
+	Vulputate enim nulla aliquet porttitor lacus. Rutrum quisque non tellus
+	orci ac auctor augue. At elementum eu facilisis sed odio morbi quis
+	commodo odio. Fermentum leo vel orci porta. Mollis nunc sed id semper
+	risus in hendrerit gravida. Sed adipiscing diam donec adipiscing
+	tristique risus. Fermentum et sollicitudin ac orci. Donec et odio
+	pellentesque diam. </p>
+
+
+<ul>
+{% for post in site.posts %}
+	<li>[{{post.date | date: "%Y/%m/%d"}}] <a href="{{post.url}}">{{post.title}}</a><br/>
+	{% comment %}
+	{{ post.excerpt }}
+	{% endcomment %}
+	</li>
+{% endfor %}
+</ul>
+
+<hr/>
+
+<h2>Lista stron</h2>
+
+<ul>
+{% for page in site.pages %}
+	<li><a href="{{ page.url }}">{{ page.url }}</a></li>
+{% endfor %}
+</ul>

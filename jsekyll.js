@@ -33,13 +33,13 @@ function fsChangeFnGen(dir) {
 		console.log(`file changed ${eventType}: ${dir} / ${filename}`);
 	}
 }
-fs.watch('tests/page1/', fsChangeFnGen('tests/page1'));
-fs.watch('tests/page1/a',fsChangeFnGen('tests/page1/a'));
+
 
 
 if (require.main !== module) {
 	// run as module (require()'d / import()'ed file)
-	return "??"; // XXX
+	console.error('JSekyll is not supposed to be loaded as module, it should be executed instead.')
+	process.exit(1)
 }
 
 
@@ -79,23 +79,26 @@ liquid.registerTag('endhighlight', {
     }
 });
 
-
 // run the subcommand, respectively
+if (!args.subcommand) {
+	parser.print_help()
+	process.exit(1)
+}
 args.subcommand(args)
-
-
-
 
 
 
 function serve(args) {
 	console.log('serving site');
-	console.log(args);
+	if (!fs.existsSync(DST_DIR)) {
+		console.error(`Directory ${DST_DIR} doesn't exist.`);
+		process.exit(1);
+	}
 
 	const app = express();
 
-	app.get('/', (req,res) => {res.sendFile('index.html', {root:DEFAULT_DST_DIR})});
-	app.use(express.static(DEFAULT_DST_DIR));
+	app.get('/', (req,res) => {res.sendFile('index.html', {root:DST_DIR})});
+	app.use(express.static(DST_DIR));
 	app.listen(PORT).on('error', (err) => {
 			console.log('Error: ' + err)
 			process.exit(1)
@@ -221,9 +224,22 @@ function buildFile(fname, site) {
 
 function build(args) {
 	console.log(`building site ${SRC_DIR} -> ${DST_DIR}`);
-	console.log(args);
 
 	console.log('Loading _config.yml and _data/*.yml');
+
+	if (!fs.existsSync(SRC_DIR)) {
+		console.error(`Directory ${SRC_DIR} doesn't exist.`);
+		process.exit(1);
+	}
+	try {
+		fs.mkdirSync(DST_DIR);
+	} catch (err) {
+		if (err.code != 'EEXIST') {
+			throw err;
+		}
+	}
+
+	fs.watch(`${SRC_DIR}/`, fsChangeFnGen(SRC_DIR));
 
 	let config_yml = yaml.safeLoad(fs.readFileSync(`${SRC_DIR}/_config.yml`, {encoding: 'utf8'}));
 	console.log(config_yml);

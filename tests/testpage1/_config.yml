@@ -1,0 +1,48 @@
+permalink: "/:categories/:year/:title/"
+title: My test website
+email: address@example.org
+layout: layout1
+
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: layout1
+  -
+    scope:
+      path: "_drafts/*"
+    values:
+      draft: true
+
+highlighter: none
+
+#markdown: GFM
+
+kramdown:
+  input: GFM
+  highlighter: false
+  syntax_highlighter: false
+  syntax_highlighter_opts:
+    disable: true
+
+
+#markdown: kramdown
+#markdown: CommonMarkGhPages
+
+# kramdown:
+#   line_width: 50
+
+#commonmark:
+#  options: ["SMART", "FOOTNOTES"]
+#  extensions: ["strikethrough", "autolink", "table", "tagfilter"]
+
+#plugins:
+#  - jekyll-feed
+#  - jekyll-sitemap
+
+#theme: minima
+
+# exclude:
+#  - ...
+
